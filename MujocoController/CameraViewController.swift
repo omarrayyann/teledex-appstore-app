@@ -49,7 +49,7 @@ class CameraViewController: UIViewController,
         
         // Set initial status text
         if let ip = ipAddress, let port = port {
-            statusLabel.text = "Sending poses to \(ip):\(port) at "
+            statusLabel.text = "Sending poses to \(ip):\(port)"
         } else {
             statusLabel.text = "Sending poses to server"
         }

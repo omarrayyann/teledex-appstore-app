@@ -404,16 +404,21 @@
                                     </label>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="CameraStatusLabel" firstAttribute="top" secondItem="CameraStatusContainer"
-                                        secondAttribute="top" id="CameraStatusLabelTop1"/>
-                                    <constraint firstItem="CameraStatusLabel" firstAttribute="leading" secondItem="CameraConnectedStatus"
-                                        secondAttribute="trailing" constant="10" id="CameraStatusLabelLeading"/>
-                                    <constraint firstItem="CameraConnectedStatus" firstAttribute="top" secondItem="CameraStatusContainer"
-                                        secondAttribute="top" id="CameraConnectedStatusTop"/>
-                                    <constraint firstItem="CameraStatusLabel" firstAttribute="top" secondItem="CameraStatusContainer"
-                                        secondAttribute="top" id="CameraStatusLabelTop2"/>
-                                    <constraint firstItem="CameraStatusLabel" firstAttribute="centerX" secondItem="CameraStatusContainer"
-                                        secondAttribute="centerX" id="CameraStatusLabelCenterX"/>
+                                    <constraint firstItem="CameraStatusLabel" firstAttribute="top"
+                                        secondItem="CameraStatusContainer" secondAttribute="top"
+                                        id="CameraStatusLabelTop1"/>
+                                    <constraint firstItem="CameraStatusLabel" firstAttribute="leading"
+                                        secondItem="CameraConnectedStatus" secondAttribute="trailing" constant="10"
+                                        id="CameraStatusLabelLeading"/>
+                                    <constraint firstItem="CameraConnectedStatus" firstAttribute="top"
+                                        secondItem="CameraStatusContainer" secondAttribute="top"
+                                        id="CameraConnectedStatusTop"/>
+                                    <constraint firstItem="CameraStatusLabel" firstAttribute="top"
+                                        secondItem="CameraStatusContainer" secondAttribute="top"
+                                        id="CameraStatusLabelTop2"/>
+                                    <constraint firstItem="CameraStatusLabel" firstAttribute="centerX"
+                                        secondItem="CameraStatusContainer" secondAttribute="centerX"
+                                        id="CameraStatusLabelCenterX"/>
                                     <constraint firstAttribute="height" constant="20" id="CameraStatusContainerHeight"/>
                                 </constraints>
                             </view>
@@ -501,12 +506,13 @@
                         <viewLayoutGuide key="safeArea" id="05C-0d-7oU"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="CameraStatusContainer" firstAttribute="leading" secondItem="05C-0d-7oU"
-                                secondAttribute="leading" constant="20" id="CameraStatusLeading"/>
+                            <constraint firstItem="CameraStatusContainer" firstAttribute="leading"
+                                secondItem="05C-0d-7oU" secondAttribute="leading" constant="20" id="CameraStatusLeading"/>
                             <constraint firstItem="CameraStatusContainer" firstAttribute="top" secondItem="05C-0d-7oU"
                                 secondAttribute="top" constant="20" id="CameraStatusTop"/>
-                            <constraint firstItem="05C-0d-7oU" firstAttribute="trailing" secondItem="CameraStatusContainer"
-                                secondAttribute="trailing" constant="20" id="CameraStatusTrailing"/>
+                            <constraint firstItem="05C-0d-7oU" firstAttribute="trailing"
+                                secondItem="CameraStatusContainer" secondAttribute="trailing" constant="20"
+                                id="CameraStatusTrailing"/>
                             <constraint firstItem="eud-ry-DMN" firstAttribute="leading" secondItem="05C-0d-7oU"
                                 secondAttribute="leading" constant="20" id="4Xk-El-dWY"/>
                             <constraint firstItem="vkP-Ut-LSE" firstAttribute="leading" secondItem="05C-0d-7oU"
@@ -526,7 +532,8 @@
                     <connections>
                         <outlet property="buttonLeave" destination="ZPW-J8-NJa" id="tkY-qk-6bL"/>
                         <outlet property="buttonResetPose" destination="ResetPoseBtn" id="ResetPoseOutlet"/>
-                        <outlet property="connectedStatus" destination="CameraConnectedStatus" id="CameraConnectedStatusOutlet"/>
+                        <outlet property="connectedStatus" destination="CameraConnectedStatus"
+                            id="CameraConnectedStatusOutlet"/>
                         <outlet property="overlayView" destination="wBK-Uo-bLw" id="daa-d9-WS1"/>
                         <outlet property="previewView" destination="vkP-Ut-LSE" id="omU-NO-tdJ"/>
                         <outlet property="statusLabel" destination="CameraStatusLabel" id="CameraStatusLabelOutlet"/>
