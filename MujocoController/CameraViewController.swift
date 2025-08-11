@@ -13,20 +13,17 @@ class CameraViewController: UIViewController,
                             ARSessionDelegate {
 
     @IBOutlet weak var buttonLeave: UIButton!
-    @IBOutlet weak var buttonResetPose: UIButton!
     @IBOutlet weak var previewView: UIView!
     @IBOutlet weak var overlayView: OverlayView!
-    @IBOutlet weak var connectedStatus: UIView!
-    @IBOutlet weak var statusLabel: UILabel!
+    @IBOutlet weak var resetButton: UIButton!
+    @IBOutlet weak var connectedStatusView: UIView!
+    @IBOutlet weak var connectedIndicator: UIView!
+    @IBOutlet weak var connectedLabel: UILabel!
     
     // Use ARSession for both pose tracking and camera feed
     private var arSession = ARSession()
     private var handLandmarker: HandLandmarker?
     var webManager = WebSocketManager()
-    
-    // IP and Port for status display
-    var ipAddress: String?
-    var port: String?
 
     // ARKit components for device pose tracking
     private var currentDeviceRotation: simd_float3x3 = matrix_identity_float3x3
@@ -37,22 +34,12 @@ class CameraViewController: UIViewController,
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Apply corner radius styling to match ViewController
         buttonLeave.layer.cornerRadius = buttonLeave.frame.height/2
-        buttonResetPose.layer.cornerRadius = buttonResetPose.frame.height/2
-        
-        // Add black border to match ViewController styling
-        buttonResetPose.layer.borderWidth = 0.2
-        buttonResetPose.layer.borderColor = CGColor.init(red: 0, green: 0, blue: 0, alpha: 1.0)
-        
-        // Setup status display styling
-        connectedStatus.layer.cornerRadius = connectedStatus.frame.height/2
-        
-        // Set initial status text
-        if let ip = ipAddress, let port = port {
-            statusLabel.text = "Sending poses to \(ip):\(port)"
-        } else {
-            statusLabel.text = "Sending poses to server"
-        }
+        resetButton.layer.cornerRadius = resetButton.frame.height/2
+        connectedStatusView.layer.cornerRadius = connectedStatusView.frame.height/2
+        connectedIndicator.layer.cornerRadius = connectedIndicator.frame.height/2
+        previewView.layer.cornerRadius = previewView.frame.height/40
         
         overlayView.backgroundColor = .clear
         webManager.delegate = self
@@ -259,27 +246,18 @@ class CameraViewController: UIViewController,
 
     // MARK: - UI Actions
 
-    @IBAction func clickedLeave(_ sender: Any) {
-        self.webManager.disconnect()
+        @IBAction func clickedLeave(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
     }
     
-    @IBAction func resetPoseClicked(_ sender: Any) {
+    @IBAction func resetPosePressed(_ sender: Any) {
         calibrateARKit()
-        print("🔄 Pose reset - current position set as origin")
+        print("🔄 Pose reset - new calibration applied")
     }
     
     // MARK: - WebSocketManagerDelegate
     func webSocketManager(_ manager: WebSocketManager, didConnect connected: Bool) {
         print("WebSocket connected: \(connected)")
-    }
-    
-    func didSend(_ timeInterval: TimeInterval) {
-        if let ip = ipAddress, let port = port {
-            statusLabel.text = "Connected and sending poses to \(ip):\(port)"
-        } else {
-            statusLabel.text = "Connected and sending poses to server"
-        }
     }
 }
 

@@ -378,16 +378,16 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO"
-                                id="CameraStatusContainer">
-                                <rect key="frame" x="20" y="20" width="350" height="20"/>
+                                id="ConnectedStatusView">
+                                <rect key="frame" x="20" y="47" width="350" height="20"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO"
-                                        id="CameraConnectedStatus">
+                                        id="ConnectedIndicator">
                                         <rect key="frame" x="43" y="0.0" width="15" height="15"/>
                                         <color key="backgroundColor" systemColor="systemGreenColor"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="15" id="CameraStatusHeight"/>
-                                            <constraint firstAttribute="width" constant="15" id="CameraStatusWidth"/>
+                                            <constraint firstAttribute="height" constant="15" id="ConnectedIndicatorHeight"/>
+                                            <constraint firstAttribute="width" constant="15" id="ConnectedIndicatorWidth"/>
                                         </constraints>
                                     </view>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left"
@@ -395,7 +395,7 @@
                                         text="Connected Successfully and Sending Poses" textAlignment="natural"
                                         lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines"
                                         adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO"
-                                        id="CameraStatusLabel">
+                                        id="ConnectedLabel">
                                         <rect key="frame" x="68" y="0.0" width="234" height="16.666666666666668"/>
                                         <fontDescription key="fontDescription" name="Avenir-Medium" family="Avenir"
                                             pointSize="12"/>
@@ -404,33 +404,26 @@
                                     </label>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="CameraStatusLabel" firstAttribute="top"
-                                        secondItem="CameraStatusContainer" secondAttribute="top"
-                                        id="CameraStatusLabelTop1"/>
-                                    <constraint firstItem="CameraStatusLabel" firstAttribute="leading"
-                                        secondItem="CameraConnectedStatus" secondAttribute="trailing" constant="10"
-                                        id="CameraStatusLabelLeading"/>
-                                    <constraint firstItem="CameraConnectedStatus" firstAttribute="top"
-                                        secondItem="CameraStatusContainer" secondAttribute="top"
-                                        id="CameraConnectedStatusTop"/>
-                                    <constraint firstItem="CameraStatusLabel" firstAttribute="top"
-                                        secondItem="CameraStatusContainer" secondAttribute="top"
-                                        id="CameraStatusLabelTop2"/>
-                                    <constraint firstItem="CameraStatusLabel" firstAttribute="centerX"
-                                        secondItem="CameraStatusContainer" secondAttribute="centerX"
-                                        id="CameraStatusLabelCenterX"/>
-                                    <constraint firstAttribute="height" constant="20" id="CameraStatusContainerHeight"/>
+                                    <constraint firstItem="ConnectedLabel" firstAttribute="top" secondItem="ConnectedStatusView"
+                                        secondAttribute="top" id="ConnectedLabelTop"/>
+                                    <constraint firstItem="ConnectedLabel" firstAttribute="leading" secondItem="ConnectedIndicator"
+                                        secondAttribute="trailing" constant="10" id="ConnectedLabelLeading"/>
+                                    <constraint firstItem="ConnectedIndicator" firstAttribute="top" secondItem="ConnectedStatusView"
+                                        secondAttribute="top" id="ConnectedIndicatorTop"/>
+                                    <constraint firstItem="ConnectedLabel" firstAttribute="centerX" secondItem="ConnectedStatusView"
+                                        secondAttribute="centerX" constant="10" id="ConnectedLabelCenterX"/>
+                                    <constraint firstAttribute="height" constant="20" id="ConnectedStatusHeight"/>
                                 </constraints>
                             </view>
                             <view autoresizesSubviews="NO" clipsSubviews="YES" contentMode="scaleToFill"
                                 translatesAutoresizingMaskIntoConstraints="NO" id="vkP-Ut-LSE">
-                                <rect key="frame" x="20.0" y="60.0" width="350" height="600"/>
+                                <rect key="frame" x="20.0" y="80.0" width="350" height="500"/>
                                 <subviews>
                                     <view autoresizesSubviews="NO" clipsSubviews="YES" contentMode="scaleToFill"
                                         translatesAutoresizingMaskIntoConstraints="NO" id="wBK-Uo-bLw"
                                         customClass="OverlayView" customModule="MujocoController"
                                         customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="350" height="600"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="350" height="500"/>
                                     </view>
                                 </subviews>
                                 <constraints>
@@ -473,26 +466,24 @@
                                             <button opaque="NO" contentMode="scaleToFill"
                                                 contentHorizontalAlignment="center" contentVerticalAlignment="center"
                                                 buttonType="system" lineBreakMode="middleTruncation"
-                                                translatesAutoresizingMaskIntoConstraints="NO" id="ResetPoseBtn">
+                                                translatesAutoresizingMaskIntoConstraints="NO" id="ResetPoseButton">
                                                 <rect key="frame" x="180.0" y="0.0" width="170" height="65"/>
                                                 <color key="backgroundColor" red="0.15686274510000001"
                                                     green="0.3411764706" blue="0.81568627449999997"
                                                     alpha="0.94737723214285718" colorSpace="custom"
                                                     customColorSpace="displayP3"/>
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom"
-                                                    customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <state key="normal" title="Button"/>
                                                 <buttonConfiguration key="configuration" style="plain"
                                                     title="Reset Pose">
                                                     <fontDescription key="titleFontDescription" name="Avenir-Medium"
-                                                        family="Avenir" pointSize="16"/>
+                                                        family="Avenir" pointSize="19"/>
                                                     <color key="baseForegroundColor" white="1" alpha="1"
                                                         colorSpace="custom"
                                                         customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </buttonConfiguration>
                                                 <connections>
-                                                    <action selector="resetPoseClicked:" destination="tOP-6Y-Mle"
-                                                        eventType="touchUpInside" id="ResetPoseAction"/>
+                                                    <action selector="resetPosePressed:" destination="tOP-6Y-Mle"
+                                                        eventType="touchUpInside" id="ResetAction"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -506,23 +497,22 @@
                         <viewLayoutGuide key="safeArea" id="05C-0d-7oU"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="CameraStatusContainer" firstAttribute="leading"
-                                secondItem="05C-0d-7oU" secondAttribute="leading" constant="20" id="CameraStatusLeading"/>
-                            <constraint firstItem="CameraStatusContainer" firstAttribute="top" secondItem="05C-0d-7oU"
-                                secondAttribute="top" constant="20" id="CameraStatusTop"/>
-                            <constraint firstItem="05C-0d-7oU" firstAttribute="trailing"
-                                secondItem="CameraStatusContainer" secondAttribute="trailing" constant="20"
-                                id="CameraStatusTrailing"/>
+                            <constraint firstItem="ConnectedStatusView" firstAttribute="top" secondItem="05C-0d-7oU"
+                                secondAttribute="top" constant="20" id="ConnectedStatusTop"/>
+                            <constraint firstItem="ConnectedStatusView" firstAttribute="leading" secondItem="05C-0d-7oU"
+                                secondAttribute="leading" constant="20" id="ConnectedStatusLeading"/>
+                            <constraint firstItem="05C-0d-7oU" firstAttribute="trailing" secondItem="ConnectedStatusView"
+                                secondAttribute="trailing" constant="20" id="ConnectedStatusTrailing"/>
                             <constraint firstItem="eud-ry-DMN" firstAttribute="leading" secondItem="05C-0d-7oU"
                                 secondAttribute="leading" constant="20" id="4Xk-El-dWY"/>
                             <constraint firstItem="vkP-Ut-LSE" firstAttribute="leading" secondItem="05C-0d-7oU"
                                 secondAttribute="leading" constant="20" id="J0w-Dt-njf"/>
                             <constraint firstItem="05C-0d-7oU" firstAttribute="bottom" secondItem="eud-ry-DMN"
                                 secondAttribute="bottom" constant="20" id="N4C-bL-uKC"/>
-                            <constraint firstItem="vkP-Ut-LSE" firstAttribute="height" constant="600" id="cL4-8o-jtF"/>
+                            <constraint firstItem="vkP-Ut-LSE" firstAttribute="height" constant="500" id="cL4-8o-jtF"/>
                             <constraint firstItem="05C-0d-7oU" firstAttribute="trailing" secondItem="vkP-Ut-LSE"
                                 secondAttribute="trailing" constant="20" id="f1j-S3-AfQ"/>
-                            <constraint firstItem="vkP-Ut-LSE" firstAttribute="top" secondItem="CameraStatusContainer"
+                            <constraint firstItem="vkP-Ut-LSE" firstAttribute="top" secondItem="ConnectedStatusView"
                                 secondAttribute="bottom" constant="20" id="vSZ-zd-g9W"/>
                             <constraint firstItem="05C-0d-7oU" firstAttribute="trailing" secondItem="eud-ry-DMN"
                                 secondAttribute="trailing" constant="20" id="z5Z-9T-mqP"/>
@@ -531,12 +521,12 @@
                     <navigationItem key="navigationItem" id="Xwq-Gc-Oxc"/>
                     <connections>
                         <outlet property="buttonLeave" destination="ZPW-J8-NJa" id="tkY-qk-6bL"/>
-                        <outlet property="buttonResetPose" destination="ResetPoseBtn" id="ResetPoseOutlet"/>
-                        <outlet property="connectedStatus" destination="CameraConnectedStatus"
-                            id="CameraConnectedStatusOutlet"/>
                         <outlet property="overlayView" destination="wBK-Uo-bLw" id="daa-d9-WS1"/>
                         <outlet property="previewView" destination="vkP-Ut-LSE" id="omU-NO-tdJ"/>
-                        <outlet property="statusLabel" destination="CameraStatusLabel" id="CameraStatusLabelOutlet"/>
+                        <outlet property="resetButton" destination="ResetPoseButton" id="ResetButtonOutlet"/>
+                        <outlet property="connectedStatusView" destination="ConnectedStatusView" id="ConnectedStatusOutlet"/>
+                        <outlet property="connectedIndicator" destination="ConnectedIndicator" id="ConnectedIndicatorOutlet"/>
+                        <outlet property="connectedLabel" destination="ConnectedLabel" id="ConnectedLabelOutlet"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Yj9-tt-OGi" userLabel="First Responder"

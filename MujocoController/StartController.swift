@@ -159,8 +159,6 @@ class StartViewController: UIViewController {
         else if segue.identifier == "showCamera" {
             if let destinationVC = segue.destination as? CameraViewController {
                 destinationVC.webManager = self.webSocketManager!
-                destinationVC.ipAddress = ipAddressTextField.text
-                destinationVC.port = portTextField.text
                 destinationVC.modalPresentationStyle = .fullScreen // Ensure full screen presentation
             }
         }
