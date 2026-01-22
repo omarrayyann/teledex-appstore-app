@@ -12,11 +12,13 @@ protocol WebSocketManagerDelegate: AnyObject {
 
 class WebSocketManager: ObservableObject {
     private var webSocketTask: URLSessionWebSocketTask?
+    private var urlSession: URLSession?  // Keep strong reference to prevent deallocation
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Published state
     @Published var toggle: Bool = false
     @Published var button: Bool = false
+    @Published var buttonSecondary: Bool = false
     @Published var isConnected: Bool = false
     @Published var receivedImage: UIImage?
 
@@ -34,48 +36,116 @@ class WebSocketManager: ObservableObject {
             return
         }
         print("WebSocketManager: connecting to \(url)")
-        webSocketTask = URLSession(configuration: .default).webSocketTask(with: url)
+        urlSession = URLSession(configuration: .default)
+        webSocketTask = urlSession?.webSocketTask(with: url)
         webSocketTask?.resume()
-        isConnected = true
-        delegate?.webSocketManager(self, didConnect: true)
+        // Don't set isConnected = true here - wait for actual response
+        // Start listening which will confirm connection
         listen()
+    }
+    
+    func connect(ip: String, port: String, completion: @escaping (Bool) -> Void) {
+        self.ipAddress = ip
+        self.port = port
+        guard let url = URL(string: "ws://\(ip):\(port)") else {
+            print("WebSocketManager: invalid URL ws://\(ip):\(port)")
+            completion(false)
+            return
+        }
+        print("WebSocketManager: connecting to \(url)")
+        
+        // Create session - keep strong reference
+        let config = URLSessionConfiguration.default
+        urlSession = URLSession(configuration: config)
+        webSocketTask = urlSession?.webSocketTask(with: url)
+        webSocketTask?.resume()
+        
+        var hasCompleted = false
+        let completionLock = NSLock()
+        
+        // Timeout after 3 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            completionLock.lock()
+            if !hasCompleted {
+                hasCompleted = true
+                completionLock.unlock()
+                print("WebSocketManager: connection timed out")
+                self?.webSocketTask?.cancel(with: .goingAway, reason: nil)
+                self?.isConnected = false
+                completion(false)
+            } else {
+                completionLock.unlock()
+            }
+        }
+        
+        // Send a ping to verify connection
+        webSocketTask?.sendPing { [weak self] error in
+            completionLock.lock()
+            if hasCompleted {
+                completionLock.unlock()
+                return
+            }
+            hasCompleted = true
+            completionLock.unlock()
+            
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("WebSocketManager: ping failed - \(error.localizedDescription)")
+                    self?.isConnected = false
+                    self?.delegate?.webSocketManager(self!, didConnect: false)
+                    completion(false)
+                } else {
+                    print("WebSocketManager: ping succeeded - connected!")
+                    self?.isConnected = true
+                    self?.delegate?.webSocketManager(self!, didConnect: true)
+                    self?.listen()
+                    self?.startPingTimer()
+                    completion(true)
+                }
+            }
+        }
     }
 
     func disconnect() {
-        guard let ws = webSocketTask else {
-            print("WebSocketManager: nothing to disconnect")
-            return
-        }
-        let reason = "Client disconnect".data(using: .utf8)
-        ws.cancel(with: .goingAway, reason: reason)
+        stopPingTimer()
+        webSocketTask?.cancel(with: .goingAway, reason: "Client disconnect".data(using: .utf8))
+        webSocketTask = nil
+        urlSession?.invalidateAndCancel()
+        urlSession = nil
         isConnected = false
+        isSending = false
         delegate?.webSocketManager(self, didConnect: false)
         print("WebSocketManager: disconnected")
     }
 
     // MARK: - Sending
+    private var isSending = false
+    
     func send(json: [String: Any]) {
         guard isConnected, let ws = webSocketTask else {
-            print("WebSocketManager: send skipped, not connected")
             return
         }
+        
+        // Skip if previous send still in progress to avoid queue buildup
+        guard !isSending else { return }
+        isSending = true
+        
         do {
             let data = try JSONSerialization.data(withJSONObject: json, options: [])
-            guard let text = String(data: data, encoding: .utf8) else { return }
-            print("WebSocketManager: sending JSON: \(text)")
+            guard let text = String(data: data, encoding: .utf8) else { 
+                isSending = false
+                return 
+            }
             let message = URLSessionWebSocketTask.Message.string(text)
-            ws.send(message) { error in
+            ws.send(message) { [weak self] error in
+                self?.isSending = false
+                // Ignore send errors - don't disconnect, just keep trying
                 if let error = error {
                     print("WebSocketManager send error:", error)
-                    DispatchQueue.main.async {
-                        self.isConnected = false
-                        self.delegate?.webSocketManager(self, didConnect: false)
-                    }
-                } else {
-                    print("WebSocketManager: send succeeded")
                 }
             }
         } catch {
+            isSending = false
             print("WebSocketManager serialization error:", error)
         }
     }
@@ -99,7 +169,8 @@ class WebSocketManager: ObservableObject {
             "rotation": rotationArray,
             "position": positionArray,
             "toggle": toggle,
-            "button": button
+            "button": button,
+            "button_secondary": buttonSecondary
         ]
 
         // Only include finger angles if provided
@@ -143,11 +214,32 @@ class WebSocketManager: ObservableObject {
                 self.listen()
             case .failure(let error):
                 print("WebSocketManager receive error:", error)
-                DispatchQueue.main.async {
-                    self.isConnected = false
-                    self.delegate?.webSocketManager(self, didConnect: false)
+                // Don't set isConnected = false here - receive errors can be transient
+                // Only disconnect on actual send failures or explicit disconnect
+                // Try to continue listening
+                if self.isConnected {
+                    self.listen()
                 }
             }
         }
+    }
+    
+    // Keep connection alive with periodic pings
+    private var pingTimer: Timer?
+    
+    func startPingTimer() {
+        pingTimer?.invalidate()
+        pingTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
+            self?.webSocketTask?.sendPing { error in
+                if let error = error {
+                    print("WebSocketManager: ping failed - \(error)")
+                }
+            }
+        }
+    }
+    
+    func stopPingTimer() {
+        pingTimer?.invalidate()
+        pingTimer = nil
     }
 }

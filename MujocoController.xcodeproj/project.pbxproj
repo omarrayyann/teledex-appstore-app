@@ -21,6 +21,7 @@
 		45F641CD2C450F8C0075559B /* ARKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45F641CC2C450F8C0075559B /* ARKitManager.swift */; };
 		45F641CF2C450FA90075559B /* WebSocketManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45F641CE2C450FA90075559B /* WebSocketManager.swift */; };
 		45F641D12C4514510075559B /* StartController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45F641D02C4514510075559B /* StartController.swift */; };
+		45RDY001002C4514510075559B /* ReadyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45RDY001012C4514510075559B /* ReadyViewController.swift */; };
 		F35E39A0427310AF545FD6B9 /* Pods_MujocoController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7967A64FB20691044DA3266B /* Pods_MujocoController.framework */; };
 /* End PBXBuildFile section */
 
@@ -42,6 +43,7 @@
 		45F641CC2C450F8C0075559B /* ARKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARKitManager.swift; sourceTree = "<group>"; };
 		45F641CE2C450FA90075559B /* WebSocketManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketManager.swift; sourceTree = "<group>"; };
 		45F641D02C4514510075559B /* StartController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartController.swift; sourceTree = "<group>"; };
+		45RDY001012C4514510075559B /* ReadyViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadyViewController.swift; sourceTree = "<group>"; };
 		7967A64FB20691044DA3266B /* Pods_MujocoController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MujocoController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5149971FB53D7F460E86A0D /* Pods-MujocoController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MujocoController.release.xcconfig"; path = "Target Support Files/Pods-MujocoController/Pods-MujocoController.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -99,6 +101,7 @@
 				45F641C62C450ED70075559B /* Info.plist */,
 				45F641CC2C450F8C0075559B /* ARKitManager.swift */,
 				45F641D02C4514510075559B /* StartController.swift */,
+				45RDY001012C4514510075559B /* ReadyViewController.swift */,
 				45171BC42C4E97800088ED60 /* Position3DView.swift */,
 				45EC7D7A2C63B05A00C0E1EE /* PoseMatrixView.swift */,
 				45E6FE982DE53DC500EB2F66 /* CameraViewController.swift */,
@@ -235,6 +238,7 @@
 				45171BC52C4E97800088ED60 /* Position3DView.swift in Sources */,
 				45F641CF2C450FA90075559B /* WebSocketManager.swift in Sources */,
 				45F641D12C4514510075559B /* StartController.swift in Sources */,
+				45RDY001002C4514510075559B /* ReadyViewController.swift in Sources */,
 				45F641B92C450ED40075559B /* AppDelegate.swift in Sources */,
 				45F641BB2C450ED40075559B /* SceneDelegate.swift in Sources */,
 				45EC7D7B2C63B05A00C0E1EE /* PoseMatrixView.swift in Sources */,
@@ -397,6 +401,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MujocoController/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TeleDex;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "To use ARKit ";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Use network";
@@ -433,6 +438,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MujocoController/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TeleDex;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "To use ARKit ";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Use network";

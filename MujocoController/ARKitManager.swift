@@ -12,7 +12,6 @@ class ARKitManager: NSObject, ARSessionDelegate {
     var arSession = ARSession()
     var rotationMatrix: simd_float3x3 = matrix_identity_float3x3
     var position: SIMD3<Float> = SIMD3<Float>(0, 0, 0)
-    var delta_freeze: SIMD3<Float> = SIMD3<Float>(0, 0, 0)
     private var calibrationTransform: simd_float4x4 = matrix_identity_float4x4
     private let motionManager = CMMotionManager()
     @Published var isConnected: Bool = false
@@ -23,8 +22,11 @@ class ARKitManager: NSObject, ARSessionDelegate {
     var port = ""
     var first = true
     weak var delegate: ARKitManagerDelegate?
+    
+    // Freeze state
     private var isFrozen = false
-    private var frozenPosition: SIMD3<Float>?
+    private var frozenTransform: simd_float4x4?  // The calibrated transform when freeze started
+    private var freezeOffset: simd_float4x4 = matrix_identity_float4x4  // Accumulated offset from all freezes
     
 //    override init() {
 //        super.init()
@@ -41,7 +43,10 @@ class ARKitManager: NSObject, ARSessionDelegate {
     override init() {
         super.init()
         arSession.delegate = self
-
+        // Don't run the session here - wait until startSession() is called
+    }
+    
+    func startSession() {
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = [.horizontal, .vertical]
     
@@ -57,6 +62,7 @@ class ARKitManager: NSObject, ARSessionDelegate {
             }
         }
 
+        first = true  // Reset calibration flag
         arSession.run(configuration)
     }
     
@@ -97,22 +103,26 @@ class ARKitManager: NSObject, ARSessionDelegate {
 
         let calibratedTransform = simd_mul(currentTransform, calibrationTransform.inverse)
         
+        // Apply freeze offset to get the adjusted transform
+        // output = freezeOffset * calibratedTransform
+        let adjustedTransform = simd_mul(freezeOffset, calibratedTransform)
+        
         let rotationMatrix = simd_float3x3(
-            SIMD3(calibratedTransform.columns.0.x, calibratedTransform.columns.0.y, calibratedTransform.columns.0.z),
-            SIMD3(calibratedTransform.columns.1.x, calibratedTransform.columns.1.y, calibratedTransform.columns.1.z),
-            SIMD3(calibratedTransform.columns.2.x, calibratedTransform.columns.2.y, calibratedTransform.columns.2.z)
+            SIMD3(adjustedTransform.columns.0.x, adjustedTransform.columns.0.y, adjustedTransform.columns.0.z),
+            SIMD3(adjustedTransform.columns.1.x, adjustedTransform.columns.1.y, adjustedTransform.columns.1.z),
+            SIMD3(adjustedTransform.columns.2.x, adjustedTransform.columns.2.y, adjustedTransform.columns.2.z)
         )
-        let position = SIMD3<Float>(calibratedTransform.columns.3.x, calibratedTransform.columns.3.y, calibratedTransform.columns.3.z)
+        let position = SIMD3<Float>(adjustedTransform.columns.3.x, adjustedTransform.columns.3.y, adjustedTransform.columns.3.z)
         
         DispatchQueue.main.async {
             self.rotationMatrix = rotationMatrix
             self.position = position
             
             self.delegate?.didUpdateRotationMatrix(rotationMatrix)
-            self.delegate?.didUpdatePosition(position - self.delta_freeze)
+            self.delegate?.didUpdatePosition(position)
             
             var startTime = Date()
-            self.webSocketManager.sendPose(rotationMatrix: rotationMatrix, position: position - self.delta_freeze)
+            self.webSocketManager.sendPose(rotationMatrix: rotationMatrix, position: position)
             var endTime = Date()
             var timeInterval = endTime.timeIntervalSince(startTime)
             self.delegate?.didSend(timeInterval)
@@ -121,9 +131,7 @@ class ARKitManager: NSObject, ARSessionDelegate {
     }
     
     func calibrate() {
-//        self.delta_freeze = SIMD3<Float>(0, 0, 0)
-        
-        if var currentTransformTemp = arSession.currentFrame {
+        if let currentTransformTemp = arSession.currentFrame {
             
             var currentTransform = currentTransformTemp.camera.transform
             let m_rotationMatrix = simd_float4x4(
@@ -136,19 +144,20 @@ class ARKitManager: NSObject, ARSessionDelegate {
             // Apply the rotation to the current transform
             currentTransform = simd_mul(m_rotationMatrix, currentTransform)
             
-            currentTransform.columns.3.x -= self.delta_freeze.x
-            currentTransform.columns.3.x -= self.delta_freeze.y
-            currentTransform.columns.3.x -= self.delta_freeze.z
-            
             calibrationTransform = currentTransform
             isFrozen = false
-            frozenPosition = nil
+            frozenTransform = nil
+            freezeOffset = matrix_identity_float4x4
         }
     }
     
     func updateButton(status: Bool) {
         button = status
         webSocketManager.button = button
+    }
+    
+    func updateButtonSecondary(status: Bool) {
+        webSocketManager.buttonSecondary = status
     }
     
     func toggleClicked(){
@@ -169,13 +178,15 @@ class ARKitManager: NSObject, ARSessionDelegate {
             // Apply the rotation to the current transform
             currentTransform = simd_mul(m_rotationMatrix, currentTransform)
             let calibratedTransform = simd_mul(currentTransform, calibrationTransform.inverse)
-            frozenPosition = SIMD3<Float>(calibratedTransform.columns.3.x, calibratedTransform.columns.3.y, calibratedTransform.columns.3.z)
+            
+            // Store the current output: frozenTransform = freezeOffset * calibratedTransform
+            frozenTransform = simd_mul(freezeOffset, calibratedTransform)
         }
         isFrozen = true
     }
     
     func unfreezeTransforms() {
-        if let frozenPosition = frozenPosition, let frame = arSession.currentFrame {
+        if let frozenTransform = frozenTransform, let frame = arSession.currentFrame {
             var currentTransform = frame.camera.transform
             let m_rotationMatrix = simd_float4x4(
                 SIMD4(0, -1, 0, 0),   // New X-axis (was -Z)
@@ -187,10 +198,12 @@ class ARKitManager: NSObject, ARSessionDelegate {
             // Apply the rotation to the current transform
             currentTransform = simd_mul(m_rotationMatrix, currentTransform)
             let calibratedTransform = simd_mul(currentTransform, calibrationTransform.inverse)
-            let currentPosition = SIMD3<Float>(calibratedTransform.columns.3.x, calibratedTransform.columns.3.y, calibratedTransform.columns.3.z)
-            let deltaPosition = currentPosition - frozenPosition
-            self.delta_freeze = self.delta_freeze + deltaPosition
+            
+            // We want: freezeOffset * calibratedTransform = frozenTransform
+            // Therefore: freezeOffset = frozenTransform * inverse(calibratedTransform)
+            freezeOffset = simd_mul(frozenTransform, calibratedTransform.inverse)
         }
         isFrozen = false
+        self.frozenTransform = nil
     }
 }

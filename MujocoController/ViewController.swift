@@ -5,7 +5,7 @@ import Combine
 
 class ViewController: UIViewController, ARSessionDelegate, ARKitManagerDelegate, ARSCNViewDelegate, WebSocketManagerDelegate {
     func webSocketManager(_ manager: WebSocketManager, didConnect connected: Bool) {
-        print("yay")
+        return
     }
     
  
@@ -17,14 +17,15 @@ class ViewController: UIViewController, ARSessionDelegate, ARKitManagerDelegate,
     @IBOutlet var freezeButton: UIButton!  // Connect this IBOutlet to your button in the storyboard
     
     @IBOutlet weak var cover: UIView!
-    var arKitManager = ARKitManager()
-    var webSocketManager = WebSocketManager()
+    var arKitManager: ARKitManager!
+    var webSocketManager: WebSocketManager!
     
     var ipAddress: String?
     var port: String?
     
     @IBOutlet weak var toggle: UIButton!
     @IBOutlet weak var button: UIButton!
+    @IBOutlet weak var buttonB: UIButton!
     @IBOutlet weak var resetButton: UIButton!
     @IBOutlet weak var exitButton: UIButton!
 
@@ -64,11 +65,19 @@ class ViewController: UIViewController, ARSessionDelegate, ARKitManagerDelegate,
         
         button.layer.borderWidth = 0.2
         button.layer.borderColor = CGColor.init(red: 0, green: 0, blue: 0, alpha: 1.0)
+        
+        buttonB.layer.borderWidth = 0.2
+        buttonB.layer.borderColor = CGColor.init(red: 0, green: 0, blue: 0, alpha: 1.0)
+        buttonB.layer.cornerRadius = buttonB.frame.height/2
 
         
         let buttonRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleButtonPress(_:)))
         buttonRecognizer.minimumPressDuration = 0
         button.addGestureRecognizer(buttonRecognizer)
+        
+        let buttonBRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleButtonBPress(_:)))
+        buttonBRecognizer.minimumPressDuration = 0
+        buttonB.addGestureRecognizer(buttonBRecognizer)
         
 //        if let ip = ipAddress, let port = port {
 //            print("IP Address: \(ip), Port: \(port)")
@@ -77,11 +86,19 @@ class ViewController: UIViewController, ARSessionDelegate, ARKitManagerDelegate,
 //        }
 //        
         
+        // Create ARKitManager fresh and connect the websocket
+        arKitManager = ARKitManager()
+        arKitManager.connect(wsManager: webSocketManager)
+        
         sceneView.delegate = self
         sceneView.session = arKitManager.arSession
+        sceneView.session.delegate = self  // Make sure ViewController receives session updates
         
         arKitManager.delegate = self
         arKitManager.webSocketManager.delegate = self
+        
+        // Start the AR session now that we're on the AR view
+        arKitManager.startSession()
         
         setupLongPressGesture()
     }
@@ -119,6 +136,17 @@ class ViewController: UIViewController, ARSessionDelegate, ARKitManagerDelegate,
             }
 }
     
+    @objc func handleButtonBPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        if gestureRecognizer.state == .began {
+            buttonB.backgroundColor = UIColor.white
+            buttonB.tintColor = UIColor.black
+            arKitManager.updateButtonSecondary(status: true)
+        } else if gestureRecognizer.state == .ended {
+            buttonB.backgroundColor = UIColor.black
+            buttonB.tintColor = UIColor.white
+            arKitManager.updateButtonSecondary(status: false)
+        }
+    }
   
     @IBOutlet weak var axisView: UIStackView!
     @IBOutlet weak var matrixView: UIView!
@@ -147,7 +175,8 @@ class ViewController: UIViewController, ARSessionDelegate, ARKitManagerDelegate,
         arKitManager.disconnect()
         position3DView.sceneView.pause(self)
         sceneView.session.pause()
-        self.dismiss(animated: true, completion: nil)
+        // Dismiss all the way back to root
+        view.window?.rootViewController?.dismiss(animated: true, completion: nil)
     }
     
     // MARK: - ARKitManagerDelegate Methods

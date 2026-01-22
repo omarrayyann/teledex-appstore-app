@@ -19,17 +19,29 @@ class CameraViewController: UIViewController,
     @IBOutlet weak var connectedStatusView: UIView!
     @IBOutlet weak var connectedIndicator: UIView!
     @IBOutlet weak var connectedLabel: UILabel!
+    @IBOutlet weak var flipCameraButton: UIButton!
     
     // Use ARSession for both pose tracking and camera feed
     private var arSession = ARSession()
     private var handLandmarker: HandLandmarker?
     var webManager = WebSocketManager()
+    private var isUsingBackCamera = true  // Track current camera
 
     // ARKit components for device pose tracking
     private var currentDeviceRotation: simd_float3x3 = matrix_identity_float3x3
     private var currentDevicePosition: SIMD3<Float> = SIMD3<Float>(0, 0, 0)
     private var calibrationTransform: simd_float4x4 = matrix_identity_float4x4
     private var isFirstFrame = true
+    
+    // MediaPipe optimization: separate queue and cached landmarks
+    private let mediaPipeQueue = DispatchQueue(label: "com.mujoco.mediapipe", qos: .userInitiated)
+    private var lastMediaPipeProcessTime: TimeInterval = 0
+    private let mediaPipeInterval: TimeInterval = 1.0 / 20.0  // 20 FPS for MediaPipe
+    
+    // Thread-safe cached landmarks (updated by MediaPipe, read by pose sender)
+    private let landmarksLock = NSLock()
+    private var cachedLandmarks: [[Float]]? = nil
+    private var cachedWorldLandmarks: [[Float]]? = nil
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,6 +49,7 @@ class CameraViewController: UIViewController,
         // Apply corner radius styling to match ViewController
         buttonLeave.layer.cornerRadius = buttonLeave.frame.height/2
         resetButton.layer.cornerRadius = resetButton.frame.height/2
+        flipCameraButton.layer.cornerRadius = flipCameraButton.frame.height/2
         connectedStatusView.layer.cornerRadius = connectedStatusView.frame.height/2
         connectedIndicator.layer.cornerRadius = connectedIndicator.frame.height/2
         previewView.layer.cornerRadius = previewView.frame.height/40
@@ -132,30 +145,41 @@ class CameraViewController: UIViewController,
         let position = SIMD3<Float>(calibratedTransform.columns.3.x, calibratedTransform.columns.3.y, calibratedTransform.columns.3.z)
         
         // Update current device pose
-        DispatchQueue.main.async {
-            self.currentDeviceRotation = rotationMatrix
-            self.currentDevicePosition = position
-        }
+        currentDeviceRotation = rotationMatrix
+        currentDevicePosition = position
         
-        // Send device pose at full ARKit frame rate (60-120 FPS depending on device)
+        // Get cached landmarks (thread-safe read)
+        landmarksLock.lock()
+        let landmarks = cachedLandmarks
+        let worldLandmarks = cachedWorldLandmarks
+        landmarksLock.unlock()
+        
+        // Send device pose at full ARKit frame rate (60-120 FPS) with latest landmarks
         webManager.sendPose(
             rotationMatrix: rotationMatrix,
             position: position,
             fingerAngles: nil,
-            landmarks: nil, // Will be updated separately when hands are detected
-            worldLandmarksPositions: nil // Will be updated separately when hands are detected
+            landmarks: landmarks,  // Use cached landmarks (may be nil if no hand detected yet)
+            worldLandmarksPositions: worldLandmarks
         )
         
-        // 2) Handle hand landmark detection using the same camera frame
-        guard let handLandmarker = handLandmarker else { return }
+        // 2) Throttle MediaPipe processing to avoid slowdown
+        let currentTime = Date().timeIntervalSince1970
+        guard currentTime - lastMediaPipeProcessTime >= mediaPipeInterval else { return }
+        lastMediaPipeProcessTime = currentTime
         
+        // Process hand detection on separate queue (non-blocking)
+        guard let handLandmarker = handLandmarker else { return }
         let pixelBuffer = frame.capturedImage
         
-        // Convert to BGRA and detect hands
-        if let bgraBuffer = convertToBGRA(from: pixelBuffer),
-           let mpImage = try? MPImage(pixelBuffer: bgraBuffer, orientation: .up) {
-            let timestamp = Int(Date().timeIntervalSince1970 * 1000)
-            try? handLandmarker.detectAsync(image: mpImage, timestampInMilliseconds: timestamp)
+        mediaPipeQueue.async { [weak self] in
+            guard let self = self else { return }
+            // Convert to BGRA and detect hands
+            if let bgraBuffer = convertToBGRA(from: pixelBuffer),
+               let mpImage = try? MPImage(pixelBuffer: bgraBuffer, orientation: .up) {
+                let timestamp = Int(Date().timeIntervalSince1970 * 1000)
+                try? handLandmarker.detectAsync(image: mpImage, timestampInMilliseconds: timestamp)
+            }
         }
     }
     
@@ -183,29 +207,43 @@ class CameraViewController: UIViewController,
         timestampInMilliseconds: Int,
         error: Error?
     ) {
-        guard let res = result, let lm = res.landmarks.first, let wlm = res.worldLandmarks.first else {
-            // No hand detected - device pose is still being sent from ARSession delegate
-            return
+        if let res = result, let lm = res.landmarks.first, let wlm = res.worldLandmarks.first {
+            // Extract landmark positions [[x, y, z]] from normalized landmarks
+            let landmarkPositions: [[Float]] = lm.map { landmark in
+                return [landmark.x, landmark.y, landmark.z]
+            }
+            
+            // Extract world landmark positions [[x, y, z]]
+            let worldLandmarksPositions: [[Float]] = wlm.map { landmark in
+                return [landmark.x, landmark.y, landmark.z]
+            }
+            
+            // Update cached landmarks (thread-safe write)
+            landmarksLock.lock()
+            cachedLandmarks = landmarkPositions
+            cachedWorldLandmarks = worldLandmarksPositions
+            landmarksLock.unlock()
+            
+            // Update UI overlay
+            updateHandOverlay(landmarks: lm)
+            
+            print("🖐 Hand detected: cached \(landmarkPositions.count) landmarks + \(worldLandmarksPositions.count) world landmarks")
+        } else {
+            // No hand detected - clear cached landmarks
+            landmarksLock.lock()
+            cachedLandmarks = nil
+            cachedWorldLandmarks = nil
+            landmarksLock.unlock()
+            
+            // Clear overlay
+            DispatchQueue.main.async {
+                self.overlayView.draw(overlays: [])
+            }
         }
-
-        // Extract landmark positions [[x, y, z]] from normalized landmarks
-        let landmarkPositions: [[Float]] = lm.map { landmark in
-            return [landmark.x, landmark.y, landmark.z]
-        }
-        
-        // Extract world landmark positions [[x, y, z]]
-        let worldLandmarksPositions: [[Float]] = wlm.map { landmark in
-            return [landmark.x, landmark.y, landmark.z]
-        }
-
-        // Send hand landmarks WITH current device pose data
-        webManager.sendPose(
-            rotationMatrix: currentDeviceRotation,
-            position: currentDevicePosition,
-            fingerAngles: nil, // Not sending finger angles anymore
-            landmarks: landmarkPositions,
-            worldLandmarksPositions: worldLandmarksPositions
-        )
+    }
+    
+    // MARK: - Helper: Update Hand Overlay
+    private func updateHandOverlay(landmarks lm: [NormalizedLandmark]) {
 
         DispatchQueue.main.async {
             // Use the actual overlay view dimensions directly
@@ -237,22 +275,48 @@ class CameraViewController: UIViewController,
             }
             let overlay = HandOverlay(dots: viewPts, lines: lines)
             self.overlayView.draw(overlays: [overlay])
-
-            // Display hand landmark info (device pose is sent continuously from ARSession)
-            print("� Hand detected: sending %d landmarks + %d world landmarks", 
-                  landmarkPositions.count, worldLandmarksPositions.count)
         }
     }
 
     // MARK: - UI Actions
 
         @IBAction func clickedLeave(_ sender: Any) {
-        self.dismiss(animated: true, completion: nil)
+        // Dismiss all the way back to root
+        view.window?.rootViewController?.dismiss(animated: true, completion: nil)
     }
     
     @IBAction func resetPosePressed(_ sender: Any) {
         calibrateARKit()
         print("🔄 Pose reset - new calibration applied")
+    }
+    
+    @IBAction func flipCameraPressed(_ sender: Any) {
+        isUsingBackCamera.toggle()
+        
+        // Reconfigure ARSession with new camera
+        let configuration = ARWorldTrackingConfiguration()
+        configuration.planeDetection = [.horizontal, .vertical]
+        
+        // ARWorldTracking only supports back camera, so switch to ARFaceTracking for front
+        if isUsingBackCamera {
+            arSession.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+            print("📷 Switched to back camera")
+        } else {
+            // Use ARFaceTrackingConfiguration for front camera
+            if ARFaceTrackingConfiguration.isSupported {
+                let faceConfig = ARFaceTrackingConfiguration()
+                arSession.run(faceConfig, options: [.resetTracking, .removeExistingAnchors])
+                print("📷 Switched to front camera")
+            } else {
+                // If face tracking not supported, fall back to back camera
+                isUsingBackCamera = true
+                arSession.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+                print("⚠️ Front camera not supported, staying on back camera")
+            }
+        }
+        
+        // Recalibrate after camera switch
+        isFirstFrame = true
     }
     
     // MARK: - WebSocketManagerDelegate
