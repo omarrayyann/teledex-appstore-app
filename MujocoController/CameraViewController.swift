@@ -20,8 +20,10 @@ class CameraViewController: UIViewController,
     @IBOutlet weak var connectedIndicator: UIView!
     @IBOutlet weak var connectedLabel: UILabel!
     
-    // Use ARSession for both pose tracking and camera feed
+    // ARSession for pose tracking (back camera) + optional face tracking (front camera)
     private var arSession = ARSession()
+    private var arscnView: ARSCNView?
+    
     private var handLandmarker: HandLandmarker?
     var webManager = WebSocketManager()
 
@@ -54,41 +56,51 @@ class CameraViewController: UIViewController,
         overlayView.backgroundColor = .clear
         webManager.delegate = self
         setupHandLandmarker()
-        setupARSession()  // Only setup ARSession, not separate camera
+        setupARSession()
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // Ensure overlayView matches previewView
         overlayView.frame = previewView.bounds
+        arscnView?.frame = previewView.bounds
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        arSession.pause()  // Only pause ARSession
+        arSession.pause()
     }
 
-    // MARK: - ARKit Setup (replaces separate camera setup)
+    // MARK: - ARKit Setup
+    // Uses ARFaceTrackingConfiguration with isWorldTrackingEnabled:
+    // - Primary camera = FRONT → capturedImage is front camera (for MediaPipe hand detection + display)
+    // - Back camera used internally → frame.camera.transform provides 6DOF world tracking pose
     private func setupARSession() {
         arSession.delegate = self
         
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = [.horizontal, .vertical]
+        // Use face tracking config so the primary (displayed) camera is the FRONT camera
+        let configuration = ARFaceTrackingConfiguration()
         
-        // Always use back camera for AR (removed front camera option)
+        // Enable world tracking so we still get 6DOF device pose from the back camera
+        if ARFaceTrackingConfiguration.supportsWorldTracking {
+            configuration.isWorldTrackingEnabled = true
+            print("🌍 World tracking enabled on face-tracking config (6DOF pose via back camera)")
+        } else {
+            print("⚠️ World tracking not supported in face-tracking mode on this device")
+        }
+        
         arSession.run(configuration)
         
-        // Create ARSCNView for preview (replaces AVCaptureVideoPreviewLayer)
-        let arscnView = ARSCNView(frame: previewView.bounds)
-        arscnView.session = arSession
-        arscnView.automaticallyUpdatesLighting = false
-        arscnView.rendersCameraGrain = false
-        arscnView.rendersMotionBlur = false
-        // Ensure the camera view fills the entire preview area
-        arscnView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        previewView.insertSubview(arscnView, at: 0)
+        // Display front camera feed via ARSCNView
+        let scnView = ARSCNView(frame: previewView.bounds)
+        scnView.session = arSession
+        scnView.automaticallyUpdatesLighting = false
+        scnView.rendersCameraGrain = false
+        scnView.rendersMotionBlur = false
+        scnView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        previewView.insertSubview(scnView, at: 0)
+        self.arscnView = scnView
         
-        print("🎥 ARKit camera session started")
+        print("🎥 ARKit session started (front camera displayed, back camera for pose tracking)")
     }
 
     // MARK: - HandLandmarker Setup
@@ -112,9 +124,9 @@ class CameraViewController: UIViewController,
         }
     }
 
-    // MARK: - ARSessionDelegate (handles both pose tracking AND hand detection)
+    // MARK: - ARSessionDelegate (pose from back camera, MediaPipe on front camera)
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        // 1) Handle device pose tracking
+        // Handle device pose tracking
         if isFirstFrame {
             calibrateARKit()
             isFirstFrame = false
@@ -124,10 +136,10 @@ class CameraViewController: UIViewController,
         
         // Apply coordinate system rotation (same as ARKitManager)
         let m_rotationMatrix = simd_float4x4(
-            SIMD4(0, -1, 0, 0),   // New X-axis (was -Z)
-            SIMD4(0, 0, 1, 0),   // New Y-axis (was -X)
-            SIMD4(-1, 0, 0, 0),   // New Z-axis (was Y)
-            SIMD4(0, 0, 0, 1)    // No translation
+            SIMD4(0, -1, 0, 0),
+            SIMD4(0, 0, 1, 0),
+            SIMD4(-1, 0, 0, 0),
+            SIMD4(0, 0, 0, 1)
         )
         
         currentTransform = simd_mul(m_rotationMatrix, currentTransform)
@@ -151,27 +163,25 @@ class CameraViewController: UIViewController,
         let worldLandmarks = cachedWorldLandmarks
         landmarksLock.unlock()
         
-        // Send device pose at full ARKit frame rate (60-120 FPS) with latest landmarks
+        // Send device pose at full ARKit frame rate with latest landmarks
         webManager.sendPose(
             rotationMatrix: rotationMatrix,
             position: position,
             fingerAngles: nil,
-            landmarks: landmarks,  // Use cached landmarks (may be nil if no hand detected yet)
+            landmarks: landmarks,
             worldLandmarksPositions: worldLandmarks
         )
         
-        // 2) Throttle MediaPipe processing to avoid slowdown
+        // Throttle MediaPipe processing on front camera frames (capturedImage = front camera)
         let currentTime = Date().timeIntervalSince1970
         guard currentTime - lastMediaPipeProcessTime >= mediaPipeInterval else { return }
         lastMediaPipeProcessTime = currentTime
         
-        // Process hand detection on separate queue (non-blocking)
         guard let handLandmarker = handLandmarker else { return }
-        let pixelBuffer = frame.capturedImage
+        let pixelBuffer = frame.capturedImage  // This is the FRONT camera since we use ARFaceTrackingConfiguration
         
         mediaPipeQueue.async { [weak self] in
             guard let self = self else { return }
-            // Convert to BGRA and detect hands
             if let bgraBuffer = convertToBGRA(from: pixelBuffer),
                let mpImage = try? MPImage(pixelBuffer: bgraBuffer, orientation: .up) {
                 let timestamp = Int(Date().timeIntervalSince1970 * 1000)
