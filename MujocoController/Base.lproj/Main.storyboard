@@ -300,7 +300,7 @@
                                 </constraints>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="eud-ry-DMN">
-                                <rect key="frame" x="20" y="684" width="350" height="130"/>
+                                <rect key="frame" x="20" y="759" width="350" height="55"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="thV-5e-XDf">
                                         <rect key="frame" x="0.0" y="0.0" width="350" height="55"/>
@@ -363,7 +363,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Yj9-tt-OGi" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3643.0769230769229" y="-41.232227488151658"/>
+            <point key="canvasLocation" x="3657" y="-41"/>
         </scene>
         <!--Start View Controller-->
         <scene sceneID="iqH-Sc-EhR">
@@ -379,7 +379,7 @@
                                 <color key="tintColor" systemColor="tintColor"/>
                             </imageView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="lBm-pu-QAC">
-                                <rect key="frame" x="20" y="259" width="350" height="330"/>
+                                <rect key="frame" x="20" y="259" width="350" height="250"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="dOA-fp-wuS">
                                         <rect key="frame" x="0.0" y="0.0" width="350" height="250"/>
@@ -438,57 +438,78 @@
                                             <constraint firstItem="htn-7m-gfV" firstAttribute="top" secondItem="dOA-fp-wuS" secondAttribute="top" constant="200" id="3rH-OT-lO8"/>
                                         </constraints>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="1sM-kG-39W">
-                                        <rect key="frame" x="0.0" y="270" width="350" height="60"/>
-                                        <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RdE-Jc-NeS">
-                                                <rect key="frame" x="0.0" y="0.0" width="165" height="60"/>
-                                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="8" maxY="0.0"/>
-                                                <state key="normal">
-                                                    <attributedString key="attributedTitle">
-                                                        <fragment content="Hand">
-                                                            <attributes>
-                                                                <font key="NSFont" size="18" name="AvenirNext-Medium"/>
-                                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                            </attributes>
-                                                        </fragment>
-                                                    </attributedString>
-                                                    <imageReference key="image" image="hand.raised.fingers.spread" catalog="system" symbolScale="large"/>
-                                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
-                                                </state>
-                                                <connections>
-                                                    <action selector="proceedHandButtonPressed:" destination="zBK-jx-5jC" eventType="touchUpInside" id="y9o-mn-OvZ"/>
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7Lx-lt-Ubv">
-                                                <rect key="frame" x="185" y="0.0" width="165" height="60"/>
-                                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="8" maxY="0.0"/>
-                                                <state key="normal">
-                                                    <attributedString key="attributedTitle">
-                                                        <fragment content="Phone Only">
-                                                            <attributes>
-                                                                <font key="NSFont" size="18" name="AvenirNext-Medium"/>
-                                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                            </attributes>
-                                                        </fragment>
-                                                    </attributedString>
-                                                    <imageReference key="image" image="iphone" catalog="system" symbolScale="large"/>
-                                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
-                                                </state>
-                                                <connections>
-                                                    <action selector="proceedButtonPressed:" destination="zBK-jx-5jC" eventType="touchUpInside" id="c1q-M3-cOr"/>
-                                                </connections>
-                                            </button>
-                                        </subviews>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="60" id="dHv-l7-RhL"/>
-                                        </constraints>
-                                    </stackView>
                                 </subviews>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="1sM-kG-39W">
+                                <rect key="frame" x="20" y="740" width="350" height="60"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RdE-Jc-NeS">
+                                        <rect key="frame" x="0.0" y="0.0" width="103.33333333333333" height="60"/>
+                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="8" maxY="0.0"/>
+                                        <state key="normal">
+                                            <attributedString key="attributedTitle">
+                                                <fragment content="Hand">
+                                                    <attributes>
+                                                        <font key="NSFont" size="18" name="AvenirNext-Medium"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                            <imageReference key="image" image="hand.raised.fingers.spread" catalog="system" symbolScale="large"/>
+                                            <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="proceedHandButtonPressed:" destination="zBK-jx-5jC" eventType="touchUpInside" id="y9o-mn-OvZ"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7Lx-lt-Ubv">
+                                        <rect key="frame" x="123.33333333333334" y="0.0" width="103.33333333333334" height="60"/>
+                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="8" maxY="0.0"/>
+                                        <state key="normal">
+                                            <attributedString key="attributedTitle">
+                                                <fragment content="Phone Only">
+                                                    <attributes>
+                                                        <font key="NSFont" size="18" name="AvenirNext-Medium"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                            <imageReference key="image" image="iphone" catalog="system" symbolScale="large"/>
+                                            <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="proceedButtonPressed:" destination="zBK-jx-5jC" eventType="touchUpInside" id="c1q-M3-cOr"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ATB-bt-001">
+                                        <rect key="frame" x="246.66666666666671" y="0.0" width="103.33333333333334" height="60"/>
+                                        <color key="backgroundColor" red="0.18210395565957202" green="0.40658746626811276" blue="0.78736584595959602" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="8" maxY="0.0"/>
+                                        <state key="normal">
+                                            <attributedString key="attributedTitle">
+                                                <fragment content="AnyTeleop">
+                                                    <attributes>
+                                                        <font key="NSFont" size="16" name="AvenirNext-Medium"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                            <imageReference key="image" image="video" catalog="system" symbolScale="large"/>
+                                            <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="large"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="proceedAnyTeleopButtonPressed:" destination="zBK-jx-5jC" eventType="touchUpInside" id="ATB-ac-001"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="60" id="dHv-l7-RhL"/>
+                                </constraints>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eKp-K0-HnB">
                                 <rect key="frame" x="20" y="107" width="350" height="58"/>
@@ -529,7 +550,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vAB-fV-iLv" customClass="NVActivityIndicatorView" customModule="NVActivityIndicatorView">
-                                <rect key="frame" x="170" y="660" width="50" height="50"/>
+                                <rect key="frame" x="170" y="580" width="50" height="50"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="50" id="Fq6-jL-bQp"/>
@@ -543,7 +564,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="s4b-3A-2yF">
-                                <rect key="frame" x="143.33333333333334" y="609" width="103.66666666666666" height="31"/>
+                                <rect key="frame" x="143.33333333333334" y="529" width="103.66666666666666" height="31"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="How to use?">
                                     <fontDescription key="titleFontDescription" type="system" pointSize="14"/>
@@ -565,6 +586,9 @@
                             <constraint firstItem="pAH-RF-Sec" firstAttribute="centerX" secondItem="eKp-K0-HnB" secondAttribute="centerX" id="Pvo-2N-ttH"/>
                             <constraint firstItem="eKp-K0-HnB" firstAttribute="leading" secondItem="1Kl-aD-weK" secondAttribute="leading" constant="20" id="WNo-3d-n6d"/>
                             <constraint firstItem="eKp-K0-HnB" firstAttribute="trailing" secondItem="lBm-pu-QAC" secondAttribute="trailing" id="beh-U3-DND"/>
+                            <constraint firstItem="1Kl-aD-weK" firstAttribute="bottom" secondItem="1sM-kG-39W" secondAttribute="bottom" constant="10" id="btm-bt-001"/>
+                            <constraint firstItem="1sM-kG-39W" firstAttribute="leading" secondItem="1Kl-aD-weK" secondAttribute="leading" constant="20" id="btm-ld-001"/>
+                            <constraint firstItem="1Kl-aD-weK" firstAttribute="trailing" secondItem="1sM-kG-39W" secondAttribute="trailing" constant="20" id="btm-tr-001"/>
                             <constraint firstItem="s4b-3A-2yF" firstAttribute="centerX" secondItem="Kep-sB-1hv" secondAttribute="centerX" id="bxq-wR-WAP"/>
                             <constraint firstItem="vAB-fV-iLv" firstAttribute="centerX" secondItem="Kep-sB-1hv" secondAttribute="centerX" id="cVS-NA-H6c"/>
                             <constraint firstItem="pAH-RF-Sec" firstAttribute="leading" secondItem="1Kl-aD-weK" secondAttribute="leading" id="dn2-9x-cVI"/>
@@ -577,6 +601,7 @@
                     <connections>
                         <outlet property="addressBack" destination="htn-7m-gfV" id="kE8-3C-362"/>
                         <outlet property="addressTextField" destination="Beg-u0-zSd" id="5mC-7j-csV"/>
+                        <outlet property="anyTeleopButton" destination="ATB-bt-001" id="ATB-out-001"/>
                         <outlet property="connectButton" destination="7Lx-lt-Ubv" id="F3n-VZ-qoe"/>
                         <outlet property="handPoseButton" destination="RdE-Jc-NeS" id="ABC-12-DEF"/>
                         <outlet property="loading" destination="vAB-fV-iLv" id="m6M-cs-NMR"/>
@@ -584,6 +609,7 @@
                         <outlet property="scannerLabel" destination="x7a-2i-W5b" id="Zw8-Nh-HUk"/>
                         <segue destination="RDY-vc-001" kind="show" identifier="showReady" id="RDY-sg-001"/>
                         <segue destination="RDY-vc-001" kind="show" identifier="showReadyHand" id="RDY-sg-002"/>
+                        <segue destination="RDY-vc-001" kind="show" identifier="showReadyAnyTeleop" id="RDY-sg-003"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="f7E-rr-MvD" sceneMemberID="firstResponder"/>
@@ -616,11 +642,10 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RDY-bt-001">
-                                <rect key="frame" x="95" y="434" width="200" height="60"/>
+                                <rect key="frame" x="20" y="754" width="350" height="60"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="60" id="RDY-bt-h"/>
-                                    <constraint firstAttribute="width" constant="200" id="RDY-bt-w"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" name="Avenir-Heavy" family="Avenir" pointSize="24"/>
                                 <state key="normal" title="Go"/>
@@ -640,8 +665,10 @@
                             <constraint firstItem="RDY-lb-001" firstAttribute="centerY" secondItem="RDY-vw-001" secondAttribute="centerY" constant="-70" id="RDY-c2"/>
                             <constraint firstItem="RDY-lb-002" firstAttribute="top" secondItem="RDY-lb-001" secondAttribute="bottom" constant="10" id="RDY-c3"/>
                             <constraint firstItem="RDY-lb-002" firstAttribute="centerX" secondItem="RDY-vw-001" secondAttribute="centerX" id="RDY-c4"/>
-                            <constraint firstItem="RDY-bt-001" firstAttribute="top" secondItem="RDY-lb-002" secondAttribute="bottom" constant="40" id="RDY-c5"/>
                             <constraint firstItem="RDY-bt-001" firstAttribute="centerX" secondItem="RDY-vw-001" secondAttribute="centerX" id="RDY-c6"/>
+                            <constraint firstItem="RDY-sa-001" firstAttribute="bottom" secondItem="RDY-bt-001" secondAttribute="bottom" constant="20" id="RDY-c7"/>
+                            <constraint firstItem="RDY-bt-001" firstAttribute="leading" secondItem="RDY-sa-001" secondAttribute="leading" constant="20" id="RDY-c8"/>
+                            <constraint firstItem="RDY-sa-001" firstAttribute="trailing" secondItem="RDY-bt-001" secondAttribute="trailing" constant="20" id="RDY-c9"/>
                         </constraints>
                     </view>
                     <connections>
@@ -649,11 +676,133 @@
                         <outlet property="messageLabel" destination="RDY-lb-001" id="RDY-out-2"/>
                         <segue destination="BYZ-38-t0r" kind="show" identifier="showARFromReady" id="RDY-sg-ar1"/>
                         <segue destination="tOP-6Y-Mle" kind="show" identifier="showCameraFromReady" id="RDY-sg-cam1"/>
+                        <segue destination="ATV-vc-001" kind="show" identifier="showAnyTeleopFromReady" id="RDY-sg-at1"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="RDY-fr-001" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1780" y="249"/>
+        </scene>
+        <!--Any Teleop View Controller-->
+        <scene sceneID="ATV-sc-ene">
+            <objects>
+                <viewController keyboardType="off" id="ATV-vc-001" customClass="AnyTeleopViewController" customModule="MujocoController" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ATV-vw-001">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="834"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view autoresizesSubviews="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ATV-pv-001">
+                                <rect key="frame" x="0.0" y="0.0" width="390" height="834"/>
+                                <subviews>
+                                    <view autoresizesSubviews="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ATV-ov-001" customClass="OverlayView" customModule="MujocoController" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="390" height="834"/>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="ATV-ov-001" secondAttribute="bottom" id="ATV-ov-bt"/>
+                                    <constraint firstItem="ATV-ov-001" firstAttribute="leading" secondItem="ATV-pv-001" secondAttribute="leading" id="ATV-ov-ld"/>
+                                    <constraint firstItem="ATV-ov-001" firstAttribute="top" secondItem="ATV-pv-001" secondAttribute="top" id="ATV-ov-tp"/>
+                                    <constraint firstAttribute="trailing" secondItem="ATV-ov-001" secondAttribute="trailing" id="ATV-ov-tr"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ATV-cs-001">
+                                <rect key="frame" x="20" y="8" width="350" height="28"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ATV-ci-001">
+                                        <rect key="frame" x="8" y="6.6666666666666661" width="15" height="14.999999999999998"/>
+                                        <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="15" id="ATV-ci-h"/>
+                                            <constraint firstAttribute="width" constant="15" id="ATV-ci-w"/>
+                                        </constraints>
+                                    </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="AnyTeleop — Back Camera" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ATV-cl-001">
+                                        <rect key="frame" x="31" y="5" width="160" height="18"/>
+                                        <fontDescription key="fontDescription" name="Avenir-Medium" family="Avenir" pointSize="13"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstItem="ATV-ci-001" firstAttribute="centerY" secondItem="ATV-cs-001" secondAttribute="centerY" id="ATV-ci-cy"/>
+                                    <constraint firstItem="ATV-ci-001" firstAttribute="leading" secondItem="ATV-cs-001" secondAttribute="leading" constant="8" id="ATV-ci-ld"/>
+                                    <constraint firstItem="ATV-cl-001" firstAttribute="centerY" secondItem="ATV-cs-001" secondAttribute="centerY" id="ATV-cl-cy"/>
+                                    <constraint firstItem="ATV-cl-001" firstAttribute="leading" secondItem="ATV-ci-001" secondAttribute="trailing" constant="8" id="ATV-cl-ld"/>
+                                    <constraint firstAttribute="height" constant="28" id="ATV-cs-ht"/>
+                                </constraints>
+                            </view>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="ATV-st-002">
+                                <rect key="frame" x="20" y="769" width="350" height="55"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ATV-bl-001">
+                                        <rect key="frame" x="0.0" y="0.0" width="110" height="55"/>
+                                        <color key="backgroundColor" red="0.70588235290000001" green="0.2470588235" blue="0.2470588235" alpha="0.84999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="arrow.left.to.line.alt" catalog="system"/>
+                                        <connections>
+                                            <action selector="clickedLeave:" destination="ATV-vc-001" eventType="touchUpInside" id="ATV-bl-ac"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ATV-fc-001">
+                                        <rect key="frame" x="120" y="0.0" width="110" height="55"/>
+                                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.84999999999999998" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="arrow.triangle.2.circlepath.camera" catalog="system"/>
+                                        <connections>
+                                            <action selector="flipCameraPressed:" destination="ATV-vc-001" eventType="touchUpInside" id="ATV-fc-ac"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ATV-rp-001">
+                                        <rect key="frame" x="240" y="0.0" width="110" height="55"/>
+                                        <color key="backgroundColor" red="0.15686274510000001" green="0.3411764706" blue="0.81568627449999997" alpha="0.84999999999999998" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Reset Pose">
+                                            <fontDescription key="titleFontDescription" name="Avenir-Medium" family="Avenir" pointSize="19"/>
+                                            <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="resetPosePressed:" destination="ATV-vc-001" eventType="touchUpInside" id="ATV-rp-ac"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="55" id="ATV-st-ht"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="ATV-sa-001"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="ATV-pv-001" firstAttribute="leading" secondItem="ATV-vw-001" secondAttribute="leading" id="ATV-c1"/>
+                            <constraint firstItem="ATV-sa-001" firstAttribute="bottom" secondItem="ATV-st-002" secondAttribute="bottom" constant="10" id="ATV-c10"/>
+                            <constraint firstItem="ATV-pv-001" firstAttribute="top" secondItem="ATV-vw-001" secondAttribute="top" id="ATV-c2"/>
+                            <constraint firstAttribute="trailing" secondItem="ATV-pv-001" secondAttribute="trailing" id="ATV-c3"/>
+                            <constraint firstAttribute="bottom" secondItem="ATV-pv-001" secondAttribute="bottom" id="ATV-c4"/>
+                            <constraint firstItem="ATV-cs-001" firstAttribute="leading" secondItem="ATV-sa-001" secondAttribute="leading" constant="20" id="ATV-c5"/>
+                            <constraint firstItem="ATV-cs-001" firstAttribute="top" secondItem="ATV-sa-001" secondAttribute="top" constant="8" id="ATV-c6"/>
+                            <constraint firstItem="ATV-sa-001" firstAttribute="trailing" secondItem="ATV-cs-001" secondAttribute="trailing" constant="20" id="ATV-c7"/>
+                            <constraint firstItem="ATV-st-002" firstAttribute="leading" secondItem="ATV-sa-001" secondAttribute="leading" constant="20" id="ATV-c8"/>
+                            <constraint firstItem="ATV-sa-001" firstAttribute="trailing" secondItem="ATV-st-002" secondAttribute="trailing" constant="20" id="ATV-c9"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="ATV-ni-001"/>
+                    <connections>
+                        <outlet property="buttonLeave" destination="ATV-bl-001" id="ATV-out-1"/>
+                        <outlet property="connectedIndicator" destination="ATV-ci-001" id="ATV-out-2"/>
+                        <outlet property="connectedLabel" destination="ATV-cl-001" id="ATV-out-3"/>
+                        <outlet property="connectedStatusView" destination="ATV-cs-001" id="ATV-out-4"/>
+                        <outlet property="flipCameraButton" destination="ATV-fc-001" id="ATV-out-8"/>
+                        <outlet property="overlayView" destination="ATV-ov-001" id="ATV-out-5"/>
+                        <outlet property="previewView" destination="ATV-pv-001" id="ATV-out-6"/>
+                        <outlet property="resetButton" destination="ATV-rp-001" id="ATV-out-7"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ATV-fr-001" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4580" y="-41"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
@@ -665,6 +814,7 @@
         <image name="hand.raised.fingers.spread" catalog="system" width="128" height="128"/>
         <image name="high_res_geometric_background" width="2247" height="2232"/>
         <image name="iphone" catalog="system" width="112" height="128"/>
+        <image name="video" catalog="system" width="128" height="82"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

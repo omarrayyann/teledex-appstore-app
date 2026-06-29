@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		45171BC52C4E97800088ED60 /* Position3DView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45171BC42C4E97800088ED60 /* Position3DView.swift */; };
+		45ATV001002DE53DC500EB2F66 /* AnyTeleopViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45ATV001012DE53DC500EB2F66 /* AnyTeleopViewController.swift */; };
 		45E6FE992DE53DC500EB2F66 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E6FE982DE53DC500EB2F66 /* CameraViewController.swift */; };
 		45E6FE9B2DE53DDA00EB2F66 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E6FE9A2DE53DDA00EB2F66 /* OverlayView.swift */; };
 		45E6FEA22DE5498F00EB2F66 /* hand_landmarker.task in Resources */ = {isa = PBXBuildFile; fileRef = 45E6FEA12DE5492700EB2F66 /* hand_landmarker.task */; };
@@ -28,6 +29,7 @@
 /* Begin PBXFileReference section */
 		09A32DD8F70F47337CFCBD7B /* Pods-MujocoController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MujocoController.debug.xcconfig"; path = "Target Support Files/Pods-MujocoController/Pods-MujocoController.debug.xcconfig"; sourceTree = "<group>"; };
 		45171BC42C4E97800088ED60 /* Position3DView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Position3DView.swift; sourceTree = "<group>"; };
+		45ATV001012DE53DC500EB2F66 /* AnyTeleopViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyTeleopViewController.swift; sourceTree = "<group>"; };
 		45E6FE982DE53DC500EB2F66 /* CameraViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
 		45E6FE9A2DE53DDA00EB2F66 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		45E6FEA12DE5492700EB2F66 /* hand_landmarker.task */ = {isa = PBXFileReference; lastKnownFileType = file; path = hand_landmarker.task; sourceTree = "<group>"; };
@@ -105,6 +107,7 @@
 				45171BC42C4E97800088ED60 /* Position3DView.swift */,
 				45EC7D7A2C63B05A00C0E1EE /* PoseMatrixView.swift */,
 				45E6FE982DE53DC500EB2F66 /* CameraViewController.swift */,
+				45ATV001012DE53DC500EB2F66 /* AnyTeleopViewController.swift */,
 				45E6FE9A2DE53DDA00EB2F66 /* OverlayView.swift */,
 			);
 			path = MujocoController;
@@ -244,6 +247,7 @@
 				45EC7D7B2C63B05A00C0E1EE /* PoseMatrixView.swift in Sources */,
 				45F641CD2C450F8C0075559B /* ARKitManager.swift in Sources */,
 				45E6FE992DE53DC500EB2F66 /* CameraViewController.swift in Sources */,
+				45ATV001002DE53DC500EB2F66 /* AnyTeleopViewController.swift in Sources */,
 				45E6FE9B2DE53DDA00EB2F66 /* OverlayView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -396,7 +400,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 1000000;
 				DEVELOPMENT_TEAM = 2UB54RR38V;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -417,7 +421,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omarrayyan.MujocoController;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -433,7 +437,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 1000000;
 				DEVELOPMENT_TEAM = 2UB54RR38V;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -454,7 +458,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omarrayyan.MujocoController;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

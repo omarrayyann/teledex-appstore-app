@@ -33,15 +33,22 @@ class CameraViewController: UIViewController,
     private var calibrationTransform: simd_float4x4 = matrix_identity_float4x4
     private var isFirstFrame = true
     
-    // MediaPipe optimization: separate queue and cached landmarks
-    private let mediaPipeQueue = DispatchQueue(label: "com.mujoco.mediapipe", qos: .userInitiated)
+    // MediaPipe optimization: cached landmarks
     private var lastMediaPipeProcessTime: TimeInterval = 0
-    private let mediaPipeInterval: TimeInterval = 1.0 / 20.0  // 20 FPS for MediaPipe
+    private let mediaPipeInterval: TimeInterval = 1.0 / 30.0  // 30 FPS for MediaPipe
     
-    // Thread-safe cached landmarks (updated by MediaPipe, read by pose sender)
-    private let landmarksLock = NSLock()
-    private var cachedLandmarks: [[Float]]? = nil
-    private var cachedWorldLandmarks: [[Float]]? = nil
+    // Monotonically increasing timestamp for MediaPipe (must never go backwards)
+    private var mediaPipeTimestamp: Int = 0
+    
+    // Reusable CIContext (creating one per frame is expensive)
+    private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+    
+    // Latest landmarks — written by MediaPipe callback, read by ARKit delegate for sending
+    // Using a simple serial queue for thread safety instead of NSLock
+    private var latestLandmarks: [[Float]]? = nil
+    private var latestWorldLandmarks: [[Float]]? = nil
+    private var landmarksVersion: UInt64 = 0        // Incremented on every update
+    private var lastSentLandmarksVersion: UInt64 = 0 // Track what we last sent
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -80,6 +87,13 @@ class CameraViewController: UIViewController,
         // Use face tracking config so the primary (displayed) camera is the FRONT camera
         let configuration = ARFaceTrackingConfiguration()
         
+        // Select highest resolution video format for better MediaPipe quality
+        let formats = ARFaceTrackingConfiguration.supportedVideoFormats
+        if let bestFormat = formats.max(by: { $0.imageResolution.width * $0.imageResolution.height < $1.imageResolution.width * $1.imageResolution.height }) {
+            configuration.videoFormat = bestFormat
+            print("📐 Using video format: \(bestFormat.imageResolution) @ \(bestFormat.framesPerSecond)fps")
+        }
+        
         // Enable world tracking so we still get 6DOF device pose from the back camera
         if ARFaceTrackingConfiguration.supportsWorldTracking {
             configuration.isWorldTrackingEnabled = true
@@ -112,8 +126,8 @@ class CameraViewController: UIViewController,
         var options = HandLandmarkerOptions()
         options.runningMode = .liveStream
         options.numHands = 1
-        options.minHandDetectionConfidence = 0.5
-        options.minTrackingConfidence = 0.5
+        options.minHandDetectionConfidence = 0.3
+        options.minTrackingConfidence = 0.4
         options.baseOptions.modelAssetPath = modelPath
         options.handLandmarkerLiveStreamDelegate = self
 
@@ -157,19 +171,13 @@ class CameraViewController: UIViewController,
         currentDeviceRotation = rotationMatrix
         currentDevicePosition = position
         
-        // Get cached landmarks (thread-safe read)
-        landmarksLock.lock()
-        let landmarks = cachedLandmarks
-        let worldLandmarks = cachedWorldLandmarks
-        landmarksLock.unlock()
-        
-        // Send device pose at full ARKit frame rate with latest landmarks
+        // Send device pose with latest landmarks
         webManager.sendPose(
             rotationMatrix: rotationMatrix,
             position: position,
             fingerAngles: nil,
-            landmarks: landmarks,
-            worldLandmarksPositions: worldLandmarks
+            landmarks: latestLandmarks,
+            worldLandmarksPositions: latestWorldLandmarks
         )
         
         // Throttle MediaPipe processing on front camera frames (capturedImage = front camera)
@@ -178,14 +186,22 @@ class CameraViewController: UIViewController,
         lastMediaPipeProcessTime = currentTime
         
         guard let handLandmarker = handLandmarker else { return }
-        let pixelBuffer = frame.capturedImage  // This is the FRONT camera since we use ARFaceTrackingConfiguration
         
-        mediaPipeQueue.async { [weak self] in
-            guard let self = self else { return }
-            if let bgraBuffer = convertToBGRA(from: pixelBuffer),
-               let mpImage = try? MPImage(pixelBuffer: bgraBuffer, orientation: .up) {
-                let timestamp = Int(Date().timeIntervalSince1970 * 1000)
-                try? handLandmarker.detectAsync(image: mpImage, timestampInMilliseconds: timestamp)
+        let pixelBuffer = frame.capturedImage  // FRONT camera (ARFaceTrackingConfiguration)
+        
+        // Use monotonically increasing timestamp (MediaPipe drops frames if timestamps go backwards)
+        mediaPipeTimestamp += 33  // ~30fps in milliseconds
+        let timestamp = mediaPipeTimestamp
+        
+        // Convert and detect synchronously — pixel buffer is only valid during this callback.
+        // detectAsync() returns immediately (enqueues work internally), so this won't block ARKit.
+        let orientation = currentFrontCameraImageOrientation()
+        if let bgraBuffer = convertToBGRA(from: pixelBuffer, context: self.ciContext),
+           let mpImage = try? MPImage(pixelBuffer: bgraBuffer, orientation: orientation) {
+            do {
+                try handLandmarker.detectAsync(image: mpImage, timestampInMilliseconds: timestamp)
+            } catch {
+                print("⚠️ MediaPipe detectAsync error: \(error)")
             }
         }
     }
@@ -207,6 +223,59 @@ class CameraViewController: UIViewController,
         }
     }
 
+    private func currentFrontCameraImageOrientation() -> UIImage.Orientation {
+        let orientation = UIDevice.current.orientation
+
+        switch orientation {
+        case .portrait:
+            return .leftMirrored
+        case .portraitUpsideDown:
+            return .rightMirrored
+        case .landscapeLeft:
+            return .downMirrored
+        case .landscapeRight:
+            return .upMirrored
+        default:
+            return .leftMirrored
+        }
+    }
+
+    /// Rotates the front camera pixel buffer from landscape sensor orientation to portrait,
+    /// and converts to BGRA for MediaPipe. Uses CIImage affine transforms for correctness.
+    private func rotatePixelBufferToPortrait(_ pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        let width = CVPixelBufferGetWidth(pixelBuffer)
+        let height = CVPixelBufferGetHeight(pixelBuffer)
+        
+        // Front camera in ARKit: sensor is landscape-left.
+        // For portrait: rotate 90° CW and mirror horizontally
+        // Transform: rotate -90° (CW) then mirror X
+        let rotated = ciImage
+            .transformed(by: CGAffineTransform(translationX: 0, y: CGFloat(width)))
+            .transformed(by: CGAffineTransform(rotationAngle: -.pi / 2))
+            .transformed(by: CGAffineTransform(scaleX: -1, y: 1))
+            .transformed(by: CGAffineTransform(translationX: CGFloat(height), y: 0))
+        
+        // Output is portrait: width=height, height=width of original
+        var outputBuffer: CVPixelBuffer?
+        let attrs = [
+            kCVPixelBufferCGImageCompatibilityKey: true,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: true
+        ] as CFDictionary
+        
+        let status = CVPixelBufferCreate(kCFAllocatorDefault,
+                                         height, width,  // Swapped for portrait
+                                         kCVPixelFormatType_32BGRA,
+                                         attrs,
+                                         &outputBuffer)
+        
+        guard status == kCVReturnSuccess, let output = outputBuffer else { return nil }
+        
+        let context = CIContext()
+        context.render(rotated, to: output)
+        return output
+    }
+
     // MARK: - MediaPipe Callback
     func handLandmarker(
         _ handLandmarker: HandLandmarker,
@@ -214,6 +283,10 @@ class CameraViewController: UIViewController,
         timestampInMilliseconds: Int,
         error: Error?
     ) {
+        if let error = error {
+            print("⚠️ MediaPipe callback error: \(error)")
+        }
+        
         if let res = result, let lm = res.landmarks.first, let wlm = res.worldLandmarks.first {
             // Extract landmark positions [[x, y, z]] from normalized landmarks
             let landmarkPositions: [[Float]] = lm.map { landmark in
@@ -225,22 +298,33 @@ class CameraViewController: UIViewController,
                 return [landmark.x, landmark.y, landmark.z]
             }
             
-            // Update cached landmarks (thread-safe write)
-            landmarksLock.lock()
-            cachedLandmarks = landmarkPositions
-            cachedWorldLandmarks = worldLandmarksPositions
-            landmarksLock.unlock()
+            // Update latest landmarks directly (ARKit delegate runs on main thread,
+            // and this callback also dispatches to main thread for safety)
+            DispatchQueue.main.async {
+                self.latestLandmarks = landmarkPositions
+                self.latestWorldLandmarks = worldLandmarksPositions
+                self.landmarksVersion += 1
+                
+                // Send immediately with current pose so landmarks are never stale
+                self.webManager.sendPose(
+                    rotationMatrix: self.currentDeviceRotation,
+                    position: self.currentDevicePosition,
+                    fingerAngles: nil,
+                    landmarks: landmarkPositions,
+                    worldLandmarksPositions: worldLandmarksPositions
+                )
+            }
             
             // Update UI overlay
             updateHandOverlay(landmarks: lm)
             
-            print("🖐 Hand detected: cached \(landmarkPositions.count) landmarks + \(worldLandmarksPositions.count) world landmarks")
+            print("🖐 Hand detected: \(landmarkPositions.count) landmarks (v\(landmarksVersion))")
         } else {
-            // No hand detected - clear cached landmarks
-            landmarksLock.lock()
-            cachedLandmarks = nil
-            cachedWorldLandmarks = nil
-            landmarksLock.unlock()
+            DispatchQueue.main.async {
+                self.latestLandmarks = nil
+                self.latestWorldLandmarks = nil
+                self.landmarksVersion += 1
+            }
             
             // Clear overlay
             DispatchQueue.main.async {
@@ -306,9 +390,9 @@ class CameraViewController: UIViewController,
 // MARK: - Helper Extensions
 
 /// Converts any CVPixelBuffer to BGRA format using CoreImage.
-func convertToBGRA(from pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
+func convertToBGRA(from pixelBuffer: CVPixelBuffer, context: CIContext? = nil) -> CVPixelBuffer? {
     let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-    let context = CIContext()
+    let ctx = context ?? CIContext()
 
     var bgraBuffer: CVPixelBuffer?
     let attrs = [
@@ -330,7 +414,7 @@ func convertToBGRA(from pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
         return nil
     }
 
-    context.render(ciImage, to: outputBuffer)
+    ctx.render(ciImage, to: outputBuffer)
     return outputBuffer
 }
 

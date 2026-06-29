@@ -9,6 +9,7 @@ class ReadyViewController: UIViewController {
     var ipAddress: String?
     var port: String?
     var isHandMode: Bool = false
+    var isAnyTeleopMode: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,7 +22,9 @@ class ReadyViewController: UIViewController {
     }
     
     @IBAction func goButtonPressed(_ sender: UIButton) {
-        if isHandMode {
+        if isAnyTeleopMode {
+            performSegue(withIdentifier: "showAnyTeleopFromReady", sender: self)
+        } else if isHandMode {
             performSegue(withIdentifier: "showCameraFromReady", sender: self)
         } else {
             performSegue(withIdentifier: "showARFromReady", sender: self)
@@ -38,6 +41,11 @@ class ReadyViewController: UIViewController {
             }
         } else if segue.identifier == "showCameraFromReady" {
             if let destinationVC = segue.destination as? CameraViewController {
+                destinationVC.webManager = webSocketManager!
+                destinationVC.modalPresentationStyle = .fullScreen
+            }
+        } else if segue.identifier == "showAnyTeleopFromReady" {
+            if let destinationVC = segue.destination as? AnyTeleopViewController {
                 destinationVC.webManager = webSocketManager!
                 destinationVC.modalPresentationStyle = .fullScreen
             }

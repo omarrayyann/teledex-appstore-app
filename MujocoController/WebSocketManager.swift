@@ -120,28 +120,49 @@ class WebSocketManager: ObservableObject {
 
     // MARK: - Sending
     private var isSending = false
+    private var pendingPayload: [String: Any]? = nil  // Always holds the latest data
     
     func send(json: [String: Any]) {
         guard isConnected, let ws = webSocketTask else {
             return
         }
         
-        // Skip if previous send still in progress to avoid queue buildup
+        // Always store the latest payload so we never send stale data
+        pendingPayload = json
+        
+        // If a send is in progress, it will pick up pendingPayload when it completes
         guard !isSending else { return }
+        
+        drainPending(ws: ws)
+    }
+    
+    /// Sends the most recent pending payload, discarding any older ones.
+    private func drainPending(ws: URLSessionWebSocketTask) {
+        guard let payload = pendingPayload else {
+            isSending = false
+            return
+        }
+        pendingPayload = nil  // Consume it
         isSending = true
         
         do {
-            let data = try JSONSerialization.data(withJSONObject: json, options: [])
-            guard let text = String(data: data, encoding: .utf8) else { 
+            let data = try JSONSerialization.data(withJSONObject: payload, options: [])
+            guard let text = String(data: data, encoding: .utf8) else {
                 isSending = false
-                return 
+                return
             }
             let message = URLSessionWebSocketTask.Message.string(text)
             ws.send(message) { [weak self] error in
-                self?.isSending = false
-                // Ignore send errors - don't disconnect, just keep trying
                 if let error = error {
                     print("WebSocketManager send error:", error)
+                }
+                // After send completes, check if newer data arrived while we were sending
+                DispatchQueue.main.async {
+                    if let self = self, let ws = self.webSocketTask, self.pendingPayload != nil {
+                        self.drainPending(ws: ws)
+                    } else {
+                        self?.isSending = false
+                    }
                 }
             }
         } catch {

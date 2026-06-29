@@ -6,6 +6,7 @@ class StartViewController: UIViewController, AVCaptureMetadataOutputObjectsDeleg
     @IBOutlet weak var addressTextField: UITextField!
     @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var handPoseButton: UIButton!
+    @IBOutlet weak var anyTeleopButton: UIButton!
     @IBOutlet weak var addressBack: UIView!
 
     @IBOutlet weak var loading: NVActivityIndicatorView!
@@ -16,6 +17,7 @@ class StartViewController: UIViewController, AVCaptureMetadataOutputObjectsDeleg
     
     var webSocketManager: WebSocketManager?
     var isHandMode: Bool = false
+    var isAnyTeleopMode: Bool = false
     var currentIPAddress: String = ""
     var currentPort: String = ""
     
@@ -29,6 +31,7 @@ class StartViewController: UIViewController, AVCaptureMetadataOutputObjectsDeleg
         
         connectButton.layer.cornerRadius = connectButton.frame.height / 2
         handPoseButton.layer.cornerRadius = handPoseButton.frame.height / 2
+        anyTeleopButton.layer.cornerRadius = anyTeleopButton.frame.height / 2
         
         // Style input background - only bottom corners rounded
         addressBack.layer.cornerRadius = 16
@@ -365,6 +368,7 @@ class StartViewController: UIViewController, AVCaptureMetadataOutputObjectsDeleg
                 
                 if success {
                     self?.isHandMode = false
+                    self?.isAnyTeleopMode = false
                     self?.currentIPAddress = ipAddress
                     self?.currentPort = port
                     self?.performSegue(withIdentifier: "showReady", sender: self)
@@ -408,11 +412,53 @@ class StartViewController: UIViewController, AVCaptureMetadataOutputObjectsDeleg
                 
                 if success {
                     self?.isHandMode = true
+                    self?.isAnyTeleopMode = false
                     self?.currentIPAddress = ipAddress
                     self?.currentPort = port
                     self?.performSegue(withIdentifier: "showReadyHand", sender: self)
                 } else {
                     // Show an alert if the connection failed
+                    let alert = UIAlertController(title: "Connection Failed", message: "Could not connect to \(ipAddress):\(port)\n\nMake sure:\n• Server is running\n• Same Wi-Fi network\n• Correct IP and port", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self?.present(alert, animated: true)
+                }
+            }
+        }
+    }
+    
+    @IBAction func proceedAnyTeleopButtonPressed(_ sender: UIButton) {
+        guard let address = addressTextField.text, !address.isEmpty else {
+            let alert = UIAlertController(title: "Missing Info", message: "Please enter IP:Port address.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
+        guard let (ipAddress, port) = parseAddress(address) else {
+            let alert = UIAlertController(title: "Invalid Format", message: "Please enter address as IP:Port\n(e.g. 192.168.1.100:8080)", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
+        saveString(ipAddress, forKey: "ip")
+        saveString(port, forKey: "port")
+        
+        loading.startAnimating()
+        setUIEnabled(false)
+        
+        checkWebSocketConnection(ipAddress: ipAddress, port: port) { [weak self] success in
+            DispatchQueue.main.async {
+                self?.loading.stopAnimating()
+                self?.setUIEnabled(true)
+                
+                if success {
+                    self?.isHandMode = false
+                    self?.isAnyTeleopMode = true
+                    self?.currentIPAddress = ipAddress
+                    self?.currentPort = port
+                    self?.performSegue(withIdentifier: "showReadyAnyTeleop", sender: self)
+                } else {
                     let alert = UIAlertController(title: "Connection Failed", message: "Could not connect to \(ipAddress):\(port)\n\nMake sure:\n• Server is running\n• Same Wi-Fi network\n• Correct IP and port", preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
                     self?.present(alert, animated: true)
@@ -436,12 +482,13 @@ class StartViewController: UIViewController, AVCaptureMetadataOutputObjectsDeleg
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showReady" || segue.identifier == "showReadyHand" {
+        if segue.identifier == "showReady" || segue.identifier == "showReadyHand" || segue.identifier == "showReadyAnyTeleop" {
             if let destinationVC = segue.destination as? ReadyViewController {
                 destinationVC.webSocketManager = self.webSocketManager
                 destinationVC.ipAddress = self.currentIPAddress
                 destinationVC.port = self.currentPort
                 destinationVC.isHandMode = self.isHandMode
+                destinationVC.isAnyTeleopMode = self.isAnyTeleopMode
                 destinationVC.modalPresentationStyle = .fullScreen
             }
         }
